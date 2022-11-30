@@ -1,0 +1,9 @@
+Highest Train: 85.61
+Highest Valid: 72.91
+  Final Train: 84.45
+   Final Test: 72.36
+All runs:
+Highest Train: 85.63 ± 0.12
+Highest Valid: 73.00 ± 0.14
+  Final Train: 83.85 ± 1.77
+   Final Test: 71.80 ± 0.33
