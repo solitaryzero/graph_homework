@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 import torch
 from ogb.nodeproppred import PygNodePropPredDataset
-from transformers import AutoTokenizer, AutoModel
+from transformers import AutoTokenizer, AutoModel, BertForSequenceClassification
 
 
 def read_map(base_path):
@@ -62,6 +62,7 @@ def encode(title, abstract, tokenizer, encoder, sent_bert=False, title_only=Fals
 def main(args):
     title_map, id_map = read_map(base_path=args.dataset_path)
     node2abstract = {}
+    print("Start processing")
     for pid in tqdm(id_map['paper id']):
         abstract_row = title_map[title_map['paper id'] == pid]
         # print(abstract_row)
