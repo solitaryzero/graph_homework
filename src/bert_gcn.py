@@ -134,7 +134,7 @@ def main():
 
     dataset = PygNodePropPredDataset(name='ogbn-arxiv',
                                      transform=T.ToSparseTensor())
-
+    print("original feature num:", dataset.data.num_features)
     # replace with bert embeddings
     bert_embeddings = torch.load(os.path.join(args.bert_embedding_path, 'bert_embedding.pt'))
     bert_embeddings = bert_embeddings.squeeze()
