@@ -5,12 +5,13 @@ import torch
 import torch.nn.functional as F
 
 import torch_geometric.transforms as T
-from torch_geometric.nn import GCNConv, SAGEConv
+from torch_geometric.nn import GCNConv, SAGEConv, GATConv
 
 from ogb.nodeproppred import PygNodePropPredDataset, Evaluator
 
 from logger import Logger
 
+from transformers import AutoModel
 
 class GCN(torch.nn.Module):
     def __init__(self, in_channels, hidden_channels, out_channels, num_layers,
@@ -44,6 +45,37 @@ class GCN(torch.nn.Module):
         x = self.convs[-1](x, adj_t)
         return x.log_softmax(dim=-1)
 
+class GAT(torch.nn.Module):
+    def __init__(self, in_channels, hidden_channels, out_channels, num_layers,
+                 dropout):
+        super(GAT, self).__init__()
+
+        self.convs = torch.nn.ModuleList()
+        self.convs.append(GATConv(in_channels, hidden_channels, cached=True))
+        self.bns = torch.nn.ModuleList()
+        self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
+        for _ in range(num_layers - 2):
+            self.convs.append(
+                GATConv(hidden_channels, hidden_channels, cached=True))
+            self.bns.append(torch.nn.BatchNorm1d(hidden_channels))
+        self.convs.append(GATConv(hidden_channels, out_channels, cached=True))
+
+        self.dropout = dropout
+
+    def reset_parameters(self):
+        for conv in self.convs:
+            conv.reset_parameters()
+        for bn in self.bns:
+            bn.reset_parameters()
+
+    def forward(self, x, adj_t):
+        for i, conv in enumerate(self.convs[:-1]):
+            x = conv(x, adj_t)
+            x = self.bns[i](x)
+            x = F.relu(x)
+            x = F.dropout(x, p=self.dropout, training=self.training)
+        x = self.convs[-1](x, adj_t)
+        return x.log_softmax(dim=-1)
 
 class SAGE(torch.nn.Module):
     def __init__(self, in_channels, hidden_channels, out_channels, num_layers,
@@ -116,7 +148,7 @@ def main():
     parser = argparse.ArgumentParser(description='OGBN-Arxiv (GNN)')
     parser.add_argument('--device', type=int, default=0)
     parser.add_argument('--log_steps', type=int, default=1)
-    parser.add_argument('--use_sage', action='store_true')
+    parser.add_argument('--model_name', type=str, choices=["gcn", "sage", "gat"], default="gcn")
     parser.add_argument('--num_layers', type=int, default=3)
     parser.add_argument('--hidden_channels', type=int, default=256)
     parser.add_argument('--dropout', type=float, default=0.5)
@@ -150,10 +182,14 @@ def main():
     split_idx = dataset.get_idx_split()
     train_idx = split_idx['train'].to(device)
 
-    if args.use_sage:
+    if args.model_name == "sage":
         model = SAGE(data.num_features, args.hidden_channels,
                      dataset.num_classes, args.num_layers,
                      args.dropout).to(device)
+    elif args.model_name == "gat":
+        model = GAT(data.num_features, args.hidden_channels,
+                    dataset.num_classes, args.num_layers,
+                    args.dropout).to(device)
     else:
         model = GCN(data.num_features, args.hidden_channels,
                     dataset.num_classes, args.num_layers,

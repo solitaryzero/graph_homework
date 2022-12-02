@@ -4,10 +4,16 @@
 #     --bert_dim 768 \
 #     --use_sage
 
-CUDA_VISIBLE_DEVICES=6 python ./src/bert_gcn.py \
-    --bert_embedding_path ./dataset/ogbn_arxiv_sentbert \
+# CUDA_VISIBLE_DEVICES=6 python ./src/bert_gcn.py \
+#     --bert_embedding_path ./dataset/ogbn_arxiv_sentbert \
+#     --bert_dim 768 \
+#     --model_name gat
+
+CUDA_VISIBLE_DEVICES=7 python ./src/bert_gcn.py \
+    --bert_embedding_path ./dataset/ogbn_arxiv_bertcls \
     --bert_dim 768 \
-    --use_sage
+    --model_name gcn
+
 
 # CUDA_VISIBLE_DEVICES=4 python ${debug_mode} ./src/bert_gcn.py \
 #     --bert_embedding_path ./dataset/ogbn_arxiv_sentbert_titleonly \

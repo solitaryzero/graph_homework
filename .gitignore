@@ -142,3 +142,5 @@ dmypy.json
 # customized files
 old_data/
 dataset/
+results/
+*.ipynb
