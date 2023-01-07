@@ -9,10 +9,10 @@
 #     --bert_dim 768 \
 #     --model_name gat
 
-CUDA_VISIBLE_DEVICES=7 python ./src/bert_gcn.py \
+CUDA_VISIBLE_DEVICES=0 python ./src/bert_gcn.py \
     --bert_embedding_path ./dataset/ogbn_arxiv_bertcls \
     --bert_dim 768 \
-    --model_name gcn
+    --model_name sage
 
 
 # CUDA_VISIBLE_DEVICES=4 python ${debug_mode} ./src/bert_gcn.py \
